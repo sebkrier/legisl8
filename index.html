@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legisl8 — AI Legislation Tracker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        dark: { '950': '#0D0D0D', '900': '#161616', '800': '#1E1E1E', '700': '#262626', '600': '#333333' },
+                        accent: { DEFAULT: '#6366F1', hover: '#818CF8' },
+                        democrat: '#3B82F6',
+                        republican: '#EF4444',
+                        bipartisan: '#A855F7',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style>
+        html { scroll-behavior: smooth; }
+        body { background: #0D0D0D; }
+
+        /* Hero gradient */
+        .hero-gradient {
+            background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+        }
+
+        /* Mockup browser chrome */
+        .browser-chrome {
+            background: #1E1E1E;
+            border: 1px solid #262626;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        .browser-chrome .titlebar {
+            background: #161616;
+            border-bottom: 1px solid #262626;
+            padding: 10px 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .browser-chrome .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .browser-chrome .dot-red { background: #EF4444; }
+        .browser-chrome .dot-yellow { background: #F59E0B; }
+        .browser-chrome .dot-green { background: #22C55E; }
+        .browser-chrome .url-bar {
+            flex: 1;
+            margin-left: 12px;
+            background: #262626;
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 12px;
+            color: #9CA3AF;
+        }
+
+        /* Feature card hover */
+        .feature-card { transition: transform 0.2s, border-color 0.2s; }
+        .feature-card:hover { transform: translateY(-2px); border-color: #333; }
+
+        /* Animated gradient line */
+        .gradient-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #6366F1, transparent);
+        }
+
+        /* Scroll fade-in */
+        .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.6s, transform 0.6s; }
+        .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+        /* Pulse ring for tracked button mockup */
+        @keyframes ping { 75%, 100% { transform: scale(2); opacity: 0; } }
+        .ping { animation: ping 1s cubic-bezier(0, 0, 0.2, 1) infinite; }
+    </style>
+</head>
+<body class="text-gray-100 font-sans antialiased">
+
+    <!-- =============================== -->
+    <!--            NAVIGATION           -->
+    <!-- =============================== -->
+    <nav class="sticky top-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-dark-700">
+        <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <svg class="h-6 w-6 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" />
+                </svg>
+                <span class="text-base font-semibold">Legisl<span class="text-red-500">8</span></span>
+            </div>
+            <div class="hidden sm:flex items-center gap-6 text-sm text-gray-400">
+                <a href="#features" class="hover:text-gray-100 transition-colors">Features</a>
+                <a href="#screens" class="hover:text-gray-100 transition-colors">Screens</a>
+                <a href="#analysis" class="hover:text-gray-100 transition-colors">AI Analysis</a>
+                <a href="#tech" class="hover:text-gray-100 transition-colors">Tech Stack</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <!-- =============================== -->
+    <!--              HERO               -->
+    <!-- =============================== -->
+    <section class="hero-gradient relative">
+        <div class="max-w-6xl mx-auto px-6 pt-24 pb-20 text-center">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-medium mb-6">
+                <span class="material-icons-round text-sm">gavel</span>
+                AI Legislation Intelligence
+            </div>
+            <p class="text-lg sm:text-xl text-gray-400 font-medium mb-4">Seb's Legisl<span class="text-red-500">8</span> Tracker</p>
+            <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight">
+                Track every AI bill.<br>
+                <span class="text-accent">Understand what matters.</span>
+            </h1>
+            <p class="mt-6 text-lg text-gray-400 max-w-2xl mx-auto leading-relaxed">
+                Legisl<span class="text-red-500">8</span> monitors AI-related legislation across all 50 states, Congress, and the White House &mdash; then uses AI to deliver deep legal analysis so you never miss a critical development.
+            </p>
+            <div class="mt-10 flex flex-wrap justify-center gap-8 text-sm text-gray-500">
+                <div class="flex items-center gap-2">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg>
+                    Federal Bills
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" /></svg>
+                    50 State Legislatures
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="h-5 w-5 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10" /></svg>
+                    Executive Orders
+                </div>
+                <div class="flex items-center gap-2">
+                    <svg class="h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" /></svg>
+                    AI-Powered Analysis
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =============================== -->
+    <!--         KEY FEATURES            -->
+    <!-- =============================== -->
+    <section id="features" class="max-w-6xl mx-auto px-6 py-20">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-bold">Core Capabilities</h2>
+            <p class="mt-3 text-gray-500 max-w-xl mx-auto">Everything you need to stay ahead of AI regulation, from data collection to legal intelligence.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Feature 1 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-blue-500/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">Multi-Source Sync</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">One-click sync pulls from Congress.gov and LegiScan APIs. Federal, state, and executive data always up to date.</p>
+            </div>
+
+            <!-- Feature 2 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-accent/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">Deep Legal Analysis</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">AI generates attorney-grade analysis: statutory framework, key provisions, compliance requirements, and enforcement structure.</p>
+            </div>
+
+            <!-- Feature 3 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-green-500/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">Bill Tracking</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Track any bill with one click. Your tracked list is always accessible with a persistent notification indicator in the nav bar.</p>
+            </div>
+
+            <!-- Feature 4 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-yellow-500/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M6 6h.008v.008H6V6Z" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">Categories &amp; Tags</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">Auto-categorized by topic (privacy, deepfakes, liability, etc.) with support for custom user-defined tags and color coding.</p>
+            </div>
+
+            <!-- Feature 5 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-red-500/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 0 1-2.25 2.25M16.5 7.5V18a2.25 2.25 0 0 0 2.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 0 0 2.25 2.25h13.5M6 7.5h3v3H6v-3Z" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">News Discovery</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">AI research agent automatically finds and links related news articles for every bill, with source verification and deduplication.</p>
+            </div>
+
+            <!-- Feature 6 -->
+            <div class="feature-card bg-dark-900 border border-dark-700 rounded-lg p-6">
+                <div class="p-2 bg-cyan-500/10 rounded-md w-fit mb-4">
+                    <svg class="h-5 w-5 text-cyan-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" /></svg>
+                </div>
+                <h3 class="text-sm font-semibold text-gray-200 mb-2">BYOK &mdash; Bring Your Own Keys</h3>
+                <p class="text-xs text-gray-500 leading-relaxed">API keys stay in your browser via localStorage. Never stored on any server. Supports multiple keys per provider with easy rotation.</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="gradient-line max-w-6xl mx-auto"></div>
+
+
+    <!-- =============================== -->
+    <!--       SCREEN: DASHBOARD         -->
+    <!-- =============================== -->
+    <section id="screens" class="max-w-6xl mx-auto px-6 py-20">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-bold">Application Screens</h2>
+            <p class="mt-3 text-gray-500 max-w-xl mx-auto">A walkthrough of the key interfaces in Legisl8.</p>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="fade-in mb-20">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-accent/10 rounded-md"><span class="material-icons-round text-accent text-lg">dashboard</span></div>
+                <div>
+                    <h3 class="text-xl font-bold">Dashboard</h3>
+                    <p class="text-sm text-gray-500">Central command for your legislation tracking</p>
+                </div>
+            </div>
+            <div class="browser-chrome">
+                <div class="titlebar">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                    <div class="url-bar">localhost:8000</div>
+                </div>
+                <div class="bg-dark-950 p-6 space-y-5">
+                    <!-- Nav mockup -->
+                    <div class="flex items-center justify-between bg-dark-900 border border-dark-700 rounded-lg px-4 py-2.5">
+                        <div class="flex items-center gap-6">
+                            <div class="flex items-center gap-2">
+                                <svg class="h-5 w-5 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v17.25m0 0c-1.472 0-2.882.265-4.185.75M12 20.25c1.472 0 2.882.265 4.185.75M18.75 4.97A48.416 48.416 0 0 0 12 4.5c-2.291 0-4.545.16-6.75.47m13.5 0c1.01.143 2.01.317 3 .52m-3-.52 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.988 5.988 0 0 1-2.031.352 5.988 5.988 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L18.75 4.971Zm-16.5.52c.99-.203 1.99-.377 3-.52m0 0 2.62 10.726c.122.499-.106 1.028-.589 1.202a5.989 5.989 0 0 1-2.031.352 5.989 5.989 0 0 1-2.031-.352c-.483-.174-.711-.703-.59-1.202L5.25 4.971Z" /></svg>
+                                <span class="text-sm font-semibold">Legisl<span class="text-red-500">8</span></span>
+                            </div>
+                            <span class="text-xs text-gray-100 border-b-2 border-accent pb-0.5">Dashboard</span>
+                            <span class="relative text-xs text-accent font-semibold bg-accent/10 px-2 py-1 rounded-md border border-accent/20">
+                                <span class="material-icons-round text-xs align-middle mr-0.5">visibility</span>
+                                Tracked
+                                <span class="absolute -top-1 -right-1 h-2.5 w-2.5 bg-accent rounded-full"><span class="absolute inset-0 bg-accent rounded-full ping"></span></span>
+                            </span>
+                            <span class="text-xs text-gray-400">All Bills</span>
+                            <span class="text-xs text-gray-400">Federal</span>
+                            <span class="text-xs text-gray-400">States</span>
+                            <span class="text-xs text-gray-400">Executive</span>
+                            <span class="text-xs text-gray-400">Categories</span>
+                        </div>
+                        <div class="bg-dark-800 border border-dark-600 rounded-md px-3 py-1 text-xs text-gray-500 w-36">Search...</div>
+                    </div>
+
+                    <!-- Header + Sync -->
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-gray-100">Dashboard</h2>
+                            <p class="text-xs text-gray-500">AI legislation tracking overview</p>
+                        </div>
+                        <button class="flex items-center gap-1.5 px-3 py-1.5 text-xs bg-dark-800 border border-dark-600 rounded-md text-gray-300">
+                            <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                            Sync Data
+                        </button>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">Federal Bills</p>
+                            <p class="text-2xl font-semibold text-gray-100 mt-1">247</p>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">State Bills</p>
+                            <p class="text-2xl font-semibold text-gray-100 mt-1">1,834</p>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">Active States</p>
+                            <p class="text-2xl font-semibold text-gray-100 mt-1">42</p>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                            <p class="text-xs text-gray-500 uppercase tracking-wide">Pending Analysis</p>
+                            <p class="text-2xl font-semibold text-gray-100 mt-1">56</p>
+                        </div>
+                    </div>
+
+                    <!-- Main Grid -->
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Recent Activity -->
+                        <div class="col-span-2 bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="px-4 py-3 border-b border-dark-700">
+                                <h3 class="text-sm font-medium text-gray-100">Recent Activity</h3>
+                                <p class="text-xs text-gray-500">Latest updates from the past 7 days</p>
+                            </div>
+                            <div class="divide-y divide-dark-700">
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-medium text-accent">H.R. 4223</span>
+                                        <span class="text-xs text-gray-300">AI Transparency in Government Act</span>
+                                    </div>
+                                    <span class="text-xs px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">Passed Committee</span>
+                                </div>
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-medium text-accent">S. 1847</span>
+                                        <span class="text-xs text-gray-300">Deepfake Accountability Act of 2025</span>
+                                    </div>
+                                    <span class="text-xs px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Introduced</span>
+                                </div>
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-medium text-green-400">CA SB-892</span>
+                                        <span class="text-xs text-gray-300">California AI Safety and Innovation Act</span>
+                                    </div>
+                                    <span class="text-xs px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">In Committee</span>
+                                </div>
+                                <div class="px-4 py-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="text-xs font-medium text-green-400">NY A-7731</span>
+                                        <span class="text-xs text-gray-300">AI Bias in Hiring Practices Prevention Act</span>
+                                    </div>
+                                    <span class="text-xs px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Introduced</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Categories Sidebar -->
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="px-4 py-3 border-b border-dark-700">
+                                <h3 class="text-sm font-medium text-gray-100">Categories</h3>
+                                <p class="text-xs text-gray-500">By topic area</p>
+                            </div>
+                            <div class="p-3 space-y-1">
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-blue-500"></span><span class="text-xs text-gray-300">Privacy &amp; Data</span></div>
+                                    <span class="text-xs text-gray-500">312</span>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-red-500"></span><span class="text-xs text-gray-300">Deepfakes</span></div>
+                                    <span class="text-xs text-gray-500">187</span>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-yellow-500"></span><span class="text-xs text-gray-300">AI Safety</span></div>
+                                    <span class="text-xs text-gray-500">156</span>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-green-500"></span><span class="text-xs text-gray-300">Employment</span></div>
+                                    <span class="text-xs text-gray-500">134</span>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-purple-500"></span><span class="text-xs text-gray-300">Liability</span></div>
+                                    <span class="text-xs text-gray-500">98</span>
+                                </div>
+                                <div class="flex items-center justify-between px-3 py-1.5 rounded-md hover:bg-dark-800">
+                                    <div class="flex items-center"><span class="w-2 h-2 rounded-full mr-2 bg-cyan-500"></span><span class="text-xs text-gray-300">Healthcare AI</span></div>
+                                    <span class="text-xs text-gray-500">73</span>
+                                </div>
+                            </div>
+                            <div class="px-4 py-2 border-t border-dark-700">
+                                <span class="text-xs text-gray-500">View all &rarr;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Links -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="flex items-center p-3 bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="p-2 bg-blue-500/10 rounded-md"><svg class="h-4 w-4 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0 0 12 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75Z" /></svg></div>
+                            <div class="ml-2"><p class="text-xs font-medium text-gray-200">Federal</p><p class="text-xs text-gray-500">Congress bills</p></div>
+                        </div>
+                        <div class="flex items-center p-3 bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="p-2 bg-green-500/10 rounded-md"><svg class="h-4 w-4 text-green-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498 4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 0 0-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0Z" /></svg></div>
+                            <div class="ml-2"><p class="text-xs font-medium text-gray-200">States</p><p class="text-xs text-gray-500">All 50 states</p></div>
+                        </div>
+                        <div class="flex items-center p-3 bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="p-2 bg-yellow-500/10 rounded-md"><svg class="h-4 w-4 text-yellow-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" /></svg></div>
+                            <div class="ml-2"><p class="text-xs font-medium text-gray-200">Pending</p><p class="text-xs text-gray-500">56 awaiting</p></div>
+                        </div>
+                        <div class="flex items-center p-3 bg-dark-900 border border-dark-700 rounded-lg">
+                            <div class="p-2 bg-purple-500/10 rounded-md"><svg class="h-4 w-4 text-purple-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" /></svg></div>
+                            <div class="ml-2"><p class="text-xs font-medium text-gray-200">Browse</p><p class="text-xs text-gray-500">Search &amp; filter</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =============================== -->
+        <!--       SCREEN: LEGISLATION       -->
+        <!-- =============================== -->
+        <div class="fade-in mb-20">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-blue-500/10 rounded-md"><span class="material-icons-round text-blue-400 text-lg">list_alt</span></div>
+                <div>
+                    <h3 class="text-xl font-bold">Legislation Browser</h3>
+                    <p class="text-sm text-gray-500">Filter, search, and track bills across every jurisdiction</p>
+                </div>
+            </div>
+            <div class="browser-chrome">
+                <div class="titlebar">
+                    <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                    <div class="url-bar">localhost:8000/legislation</div>
+                </div>
+                <div class="bg-dark-950 p-6 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div><h2 class="text-lg font-semibold text-gray-100">All Legislation</h2><p class="text-xs text-gray-500">2,081 bills found</p></div>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4">
+                        <!-- Filters -->
+                        <div class="space-y-3">
+                            <div><label class="text-xs text-gray-500 mb-1 block">Jurisdiction</label><select class="w-full bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-300 px-2 py-1.5"><option>All</option></select></div>
+                            <div><label class="text-xs text-gray-500 mb-1 block">Status</label><select class="w-full bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-300 px-2 py-1.5"><option>All Statuses</option></select></div>
+                            <div><label class="text-xs text-gray-500 mb-1 block">Category</label><select class="w-full bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-300 px-2 py-1.5"><option>All Categories</option></select></div>
+                        </div>
+                        <!-- Table -->
+                        <div class="col-span-3">
+                            <input type="text" placeholder="Search bills..." class="w-full mb-3 px-3 py-1.5 bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-200 placeholder-gray-500">
+                            <table class="w-full text-xs">
+                                <thead><tr class="text-left text-gray-500 border-b border-dark-700">
+                                    <th class="pb-2 font-medium">Bill #</th><th class="pb-2 font-medium">Title</th><th class="pb-2 font-medium">Jurisdiction</th><th class="pb-2 font-medium">Status</th><th class="pb-2 font-medium">Track</th>
+                                </tr></thead>
+                                <tbody class="divide-y divide-dark-700">
+                                    <tr class="text-gray-300">
+                                        <td class="py-2.5 text-accent font-medium">H.R. 4223</td>
+                                        <td class="py-2.5">AI Transparency in Government Act</td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Federal</span></td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400">Passed Committee</span></td>
+                                        <td class="py-2.5"><span class="material-icons-round text-accent text-sm">visibility</span></td>
+                                    </tr>
+                                    <tr class="text-gray-300">
+                                        <td class="py-2.5 text-accent font-medium">S. 1847</td>
+                                        <td class="py-2.5">Deepfake Accountability Act of 2025</td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">Federal</span></td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">Introduced</span></td>
+                                        <td class="py-2.5"><span class="material-icons-round text-gray-600 text-sm">visibility_off</span></td>
+                                    </tr>
+                                    <tr class="text-gray-300">
+                                        <td class="py-2.5 text-green-400 font-medium">CA SB-892</td>
+                                        <td class="py-2.5">California AI Safety and Innovation Act</td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">CA</span></td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-yellow-500/10 text-yellow-400">In Committee</span></td>
+                                        <td class="py-2.5"><span class="material-icons-round text-accent text-sm">visibility</span></td>
+                                    </tr>
+                                    <tr class="text-gray-300">
+                                        <td class="py-2.5 text-green-400 font-medium">TX HB-3401</td>
+                                        <td class="py-2.5">AI in Criminal Justice Oversight Act</td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20">TX</span></td>
+                                        <td class="py-2.5"><span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400">Introduced</span></td>
+                                        <td class="py-2.5"><span class="material-icons-round text-gray-600 text-sm">visibility_off</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="flex justify-between items-center mt-3 text-xs text-gray-500">
+                                <span>Showing 1-25 of 2,081</span>
+                                <div class="flex gap-1">
+                                    <span class="px-2 py-1 bg-accent/20 text-accent rounded">1</span>
+                                    <span class="px-2 py-1 bg-dark-800 rounded">2</span>
+                                    <span class="px-2 py-1 bg-dark-800 rounded">3</span>
+                                    <span class="px-2 py-1 bg-dark-800 rounded">Next &rarr;</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =============================== -->
+        <!--     SCREEN: BILL DETAIL         -->
+        <!-- =============================== -->
+        <div id="analysis" class="fade-in mb-20">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-accent/10 rounded-md"><span class="material-icons-round text-accent text-lg">description</span></div>
+                <div>
+                    <h3 class="text-xl font-bold">Bill Detail &amp; AI Analysis</h3>
+                    <p class="text-sm text-gray-500">Deep-dive view with AI-generated legal intelligence</p>
+                </div>
+            </div>
+            <div class="browser-chrome">
+                <div class="titlebar">
+                    <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                    <div class="url-bar">localhost:8000/legislation/a3f8c...</div>
+                </div>
+                <div class="bg-dark-950 p-6 space-y-4">
+                    <!-- Bill header -->
+                    <div class="bg-dark-900 border border-dark-700 rounded-lg p-5">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-sm font-medium text-accent">H.R. 4223</span>
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-green-500/10 text-green-400 border border-green-500/20">Passed Committee</span>
+                                    <span class="px-1.5 py-0.5 rounded text-xs bg-blue-500/10 text-blue-400 border border-blue-500/20">Federal</span>
+                                </div>
+                                <h2 class="text-base font-semibold text-gray-100">AI Transparency in Government Act</h2>
+                                <div class="flex gap-1.5 mt-2">
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-blue-500/10 text-blue-400">Privacy &amp; Data</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-yellow-500/10 text-yellow-400">AI Safety</span>
+                                    <span class="px-2 py-0.5 rounded-full text-xs bg-purple-500/10 text-purple-400">Government</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2 px-3 py-1.5 bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-400">
+                                    Track: <span class="material-icons-round text-accent text-sm">visibility</span>
+                                </div>
+                                <div class="flex items-center gap-1.5 px-3 py-1.5 bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-300">
+                                    <svg class="h-3.5 w-3.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                                    Re-analyze
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="col-span-2 space-y-4">
+                            <!-- Analysis Panel -->
+                            <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                                <div class="px-5 py-3 border-b border-dark-700 flex items-center gap-2">
+                                    <svg class="h-4 w-4 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" /></svg>
+                                    <h3 class="text-sm font-semibold text-gray-100">Legal Analysis</h3>
+                                    <span class="ml-auto text-xs text-gray-500">Jan 28, 2026</span>
+                                </div>
+                                <div class="p-5 space-y-5">
+                                    <!-- Executive Summary -->
+                                    <div>
+                                        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Executive Summary</h4>
+                                        <div class="bg-dark-800 rounded-lg p-4 border-l-4 border-accent text-sm text-gray-300 leading-relaxed">
+                                            This bill mandates transparency requirements for federal agencies deploying AI systems in decision-making processes affecting the public. It establishes an AI Transparency Office within the OMB, requires algorithmic impact assessments for high-risk systems, and creates a public registry of AI tools used in government services.
+                                        </div>
+                                    </div>
+                                    <!-- Framework + Scope -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Statutory Framework</h4>
+                                            <p class="text-xs text-gray-300 leading-relaxed">Amends the E-Government Act of 2002 (44 U.S.C. &sect;3501 et seq.) to add a new subchapter on artificial intelligence transparency in federal information management.</p>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Regulatory Scope</h4>
+                                            <p class="text-xs text-gray-300 leading-relaxed">Applies to all executive branch agencies as defined in 5 U.S.C. &sect;105, with phased implementation beginning with CFO Act agencies.</p>
+                                        </div>
+                                    </div>
+                                    <!-- Key Provisions -->
+                                    <div>
+                                        <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Key Provisions</h4>
+                                        <div class="space-y-3">
+                                            <div class="border border-dark-700 rounded-lg p-3">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h5 class="text-xs font-semibold text-gray-200">Algorithmic Impact Assessments</h5>
+                                                    <span class="text-xs font-mono text-gray-500 bg-dark-800 px-1.5 py-0.5 rounded">&sect;3(a)</span>
+                                                </div>
+                                                <p class="text-xs text-gray-400">Requires agencies to conduct and publish impact assessments before deploying AI systems that affect individual rights, benefits, or access to government services.</p>
+                                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                                    <div class="bg-dark-800 rounded p-2"><span class="text-xs font-semibold text-gray-500">Compliance:</span><p class="text-xs text-gray-400 mt-0.5">Annual certification by agency CIO</p></div>
+                                                    <div class="bg-dark-800 rounded p-2"><span class="text-xs font-semibold text-gray-500">Enforcement:</span><p class="text-xs text-gray-400 mt-0.5">GAO audit authority, congressional reporting</p></div>
+                                                </div>
+                                            </div>
+                                            <div class="border border-dark-700 rounded-lg p-3">
+                                                <div class="flex items-center justify-between mb-1">
+                                                    <h5 class="text-xs font-semibold text-gray-200">Public AI Registry</h5>
+                                                    <span class="text-xs font-mono text-gray-500 bg-dark-800 px-1.5 py-0.5 rounded">&sect;5</span>
+                                                </div>
+                                                <p class="text-xs text-gray-400">Establishes a searchable public database of all AI systems deployed by federal agencies, including purpose, data sources, and performance metrics.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- Political Analysis -->
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-dark-800 rounded-lg p-4">
+                                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Passage Likelihood</h4>
+                                            <span class="text-3xl font-bold text-yellow-400">62%</span>
+                                            <div class="w-full bg-dark-700 rounded-full h-2 mt-2">
+                                                <div class="bg-yellow-400 h-2 rounded-full" style="width: 62%"></div>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2">Bipartisan support in committee but faces floor scheduling challenges in current session.</p>
+                                        </div>
+                                        <div class="bg-dark-800 rounded-lg p-4">
+                                            <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Partisan Classification</h4>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="px-2 py-1 rounded text-xs font-semibold text-bipartisan bg-bipartisan/10 border border-bipartisan/20">Bipartisan</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-2">Co-sponsored by members of both parties, with 3 Republican and 5 Democrat co-sponsors.</p>
+                                        </div>
+                                    </div>
+                                    <div class="pt-3 border-t border-dark-700 text-xs text-gray-600">Analysis: gemini-2.0-flash</div>
+                                </div>
+                            </div>
+
+                            <!-- News -->
+                            <div class="bg-dark-900 border border-dark-700 rounded-lg">
+                                <div class="px-5 py-3 border-b border-dark-700">
+                                    <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide">Related News</h3>
+                                </div>
+                                <div class="divide-y divide-dark-700">
+                                    <div class="px-5 py-3">
+                                        <p class="text-xs text-gray-500 mb-0.5">The Verge</p>
+                                        <p class="text-xs text-gray-200">House committee advances AI transparency bill with bipartisan vote</p>
+                                    </div>
+                                    <div class="px-5 py-3">
+                                        <p class="text-xs text-gray-500 mb-0.5">Reuters</p>
+                                        <p class="text-xs text-gray-200">Federal AI disclosure requirements gain momentum in Congress</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar -->
+                        <div class="space-y-4">
+                            <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                                <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Details</h3>
+                                <dl class="space-y-2 text-xs">
+                                    <div class="flex justify-between"><dt class="text-gray-500">Jurisdiction</dt><dd class="text-gray-300">Federal</dd></div>
+                                    <div class="flex justify-between"><dt class="text-gray-500">Chamber</dt><dd class="text-gray-300">House</dd></div>
+                                    <div class="flex justify-between"><dt class="text-gray-500">Introduced</dt><dd class="text-gray-300">Sep 15, 2025</dd></div>
+                                    <div class="flex justify-between"><dt class="text-gray-500">Last Action</dt><dd class="text-gray-300">Jan 22, 2026</dd></div>
+                                    <div class="flex justify-between"><dt class="text-gray-500">Source</dt><dd class="text-gray-300">Congress.gov</dd></div>
+                                </dl>
+                            </div>
+                            <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                                <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Sponsors</h3>
+                                <ul class="space-y-2 text-xs">
+                                    <li class="flex items-center justify-between">
+                                        <div><p class="text-gray-300">Rep. Anna Eshoo</p><p class="text-gray-500">CA <span class="text-accent">Primary</span></p></div>
+                                        <span class="px-1.5 py-0.5 rounded text-democrat bg-democrat/10">D</span>
+                                    </li>
+                                    <li class="flex items-center justify-between">
+                                        <div><p class="text-gray-300">Rep. Jay Obernolte</p><p class="text-gray-500">CA</p></div>
+                                        <span class="px-1.5 py-0.5 rounded text-republican bg-republican/10">R</span>
+                                    </li>
+                                    <li class="flex items-center justify-between">
+                                        <div><p class="text-gray-300">Rep. Don Beyer</p><p class="text-gray-500">VA</p></div>
+                                        <span class="px-1.5 py-0.5 rounded text-democrat bg-democrat/10">D</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =============================== -->
+        <!--       SCREEN: STATES            -->
+        <!-- =============================== -->
+        <div class="fade-in mb-20">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-green-500/10 rounded-md"><span class="material-icons-round text-green-400 text-lg">map</span></div>
+                <div>
+                    <h3 class="text-xl font-bold">State Legislation</h3>
+                    <p class="text-sm text-gray-500">Browse AI bills across all 50 states</p>
+                </div>
+            </div>
+            <div class="browser-chrome">
+                <div class="titlebar">
+                    <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                    <div class="url-bar">localhost:8000/states</div>
+                </div>
+                <div class="bg-dark-950 p-6 space-y-4">
+                    <div><h2 class="text-lg font-semibold text-gray-100">State Legislation</h2><p class="text-xs text-gray-500">1,834 AI-related bills across 42 states</p></div>
+
+                    <!-- Stats -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4"><p class="text-xs text-gray-500 uppercase">Total Bills</p><p class="text-2xl font-semibold text-gray-100 mt-1">1,834</p></div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4"><p class="text-xs text-gray-500 uppercase">Active States</p><p class="text-2xl font-semibold text-gray-100 mt-1">42</p></div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4"><p class="text-xs text-gray-500 uppercase">Most Active</p><p class="text-2xl font-semibold text-gray-100 mt-1">CA</p></div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg p-4"><p class="text-xs text-gray-500 uppercase">Avg/State</p><p class="text-2xl font-semibold text-gray-100 mt-1">43.7</p></div>
+                    </div>
+
+                    <!-- State Grid -->
+                    <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide">Browse by State</h3>
+                            <input type="text" placeholder="Search states..." class="px-3 py-1 bg-dark-800 border border-dark-600 rounded-md text-xs text-gray-200 placeholder-gray-500 w-40">
+                        </div>
+                        <div class="grid grid-cols-8 gap-1.5">
+                            <!-- Sample states -->
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">AL</span><span class="text-xs text-accent">12</span></div>
+                            <div class="p-2 rounded bg-dark-900 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">AK</span><span class="text-xs text-gray-600">0</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">AZ</span><span class="text-xs text-accent">18</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">AR</span><span class="text-xs text-accent">5</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">CA</span><span class="text-xs text-accent font-semibold">147</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">CO</span><span class="text-xs text-accent">31</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">CT</span><span class="text-xs text-accent">24</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">DE</span><span class="text-xs text-accent">3</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">FL</span><span class="text-xs text-accent">28</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">GA</span><span class="text-xs text-accent">9</span></div>
+                            <div class="p-2 rounded bg-dark-900 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">HI</span><span class="text-xs text-gray-600">0</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">ID</span><span class="text-xs text-accent">2</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">IL</span><span class="text-xs text-accent">67</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">IN</span><span class="text-xs text-accent">11</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">IA</span><span class="text-xs text-accent">4</span></div>
+                            <div class="p-2 rounded bg-dark-800 border border-dark-700 flex items-center justify-between"><span class="text-xs font-medium text-gray-300">KS</span><span class="text-xs text-accent">6</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Most Active -->
+                    <div class="bg-dark-900 border border-dark-700 rounded-lg p-4">
+                        <h3 class="text-xs font-medium text-gray-400 uppercase tracking-wide mb-3">Most Active States</h3>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between p-1.5">
+                                <div class="flex items-center gap-2"><span class="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-500 bg-dark-800">1</span><div><span class="text-xs font-medium text-gray-200">CA</span> <span class="text-xs text-gray-500 ml-1">California</span></div></div>
+                                <div class="flex items-center gap-2"><div class="w-24 bg-dark-700 rounded-full h-1.5"><div class="bg-accent h-1.5 rounded-full" style="width:100%"></div></div><span class="text-xs text-gray-400 w-6 text-right">147</span></div>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5">
+                                <div class="flex items-center gap-2"><span class="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-500 bg-dark-800">2</span><div><span class="text-xs font-medium text-gray-200">NY</span> <span class="text-xs text-gray-500 ml-1">New York</span></div></div>
+                                <div class="flex items-center gap-2"><div class="w-24 bg-dark-700 rounded-full h-1.5"><div class="bg-accent h-1.5 rounded-full" style="width:72%"></div></div><span class="text-xs text-gray-400 w-6 text-right">106</span></div>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5">
+                                <div class="flex items-center gap-2"><span class="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-500 bg-dark-800">3</span><div><span class="text-xs font-medium text-gray-200">IL</span> <span class="text-xs text-gray-500 ml-1">Illinois</span></div></div>
+                                <div class="flex items-center gap-2"><div class="w-24 bg-dark-700 rounded-full h-1.5"><div class="bg-accent h-1.5 rounded-full" style="width:46%"></div></div><span class="text-xs text-gray-400 w-6 text-right">67</span></div>
+                            </div>
+                            <div class="flex items-center justify-between p-1.5">
+                                <div class="flex items-center gap-2"><span class="w-5 h-5 flex items-center justify-center rounded text-xs text-gray-500 bg-dark-800">4</span><div><span class="text-xs font-medium text-gray-200">TX</span> <span class="text-xs text-gray-500 ml-1">Texas</span></div></div>
+                                <div class="flex items-center gap-2"><div class="w-24 bg-dark-700 rounded-full h-1.5"><div class="bg-accent h-1.5 rounded-full" style="width:35%"></div></div><span class="text-xs text-gray-400 w-6 text-right">52</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =============================== -->
+        <!--     SCREEN: CATEGORIES          -->
+        <!-- =============================== -->
+        <div class="fade-in mb-20">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="p-2 bg-yellow-500/10 rounded-md"><span class="material-icons-round text-yellow-400 text-lg">category</span></div>
+                <div>
+                    <h3 class="text-xl font-bold">Categories</h3>
+                    <p class="text-sm text-gray-500">Browse legislation by AI topic area</p>
+                </div>
+            </div>
+            <div class="browser-chrome">
+                <div class="titlebar">
+                    <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
+                    <div class="url-bar">localhost:8000/categories</div>
+                </div>
+                <div class="bg-dark-950 p-6 space-y-4">
+                    <div><h2 class="text-lg font-semibold text-gray-100">Categories</h2><p class="text-xs text-gray-500">Browse AI legislation by topic area</p></div>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-blue-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">Privacy &amp; Data Protection</h4><span class="text-lg font-semibold text-blue-500">312</span></div>
+                                <p class="text-xs text-gray-500 mt-1">Bills addressing AI data collection, user privacy, and data governance</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-blue-500" style="width:100%"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-red-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">Deepfakes &amp; Synthetic Media</h4><span class="text-lg font-semibold text-red-500">187</span></div>
+                                <p class="text-xs text-gray-500 mt-1">Regulation of AI-generated images, video, and audio content</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-red-500" style="width:60%"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-yellow-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">AI Safety &amp; Risk</h4><span class="text-lg font-semibold text-yellow-500">156</span></div>
+                                <p class="text-xs text-gray-500 mt-1">Safety testing, risk assessments, and responsible AI development</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-yellow-500" style="width:50%"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-green-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">Employment &amp; Hiring</h4><span class="text-lg font-semibold text-green-500">134</span></div>
+                                <p class="text-xs text-gray-500 mt-1">AI in hiring decisions, workplace automation, and labor protections</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-green-500" style="width:43%"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-purple-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">Liability &amp; Accountability</h4><span class="text-lg font-semibold text-purple-500">98</span></div>
+                                <p class="text-xs text-gray-500 mt-1">Legal liability frameworks for AI-caused harm and accountability</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-purple-500" style="width:31%"></div></div>
+                            </div>
+                        </div>
+                        <div class="bg-dark-900 border border-dark-700 rounded-lg overflow-hidden">
+                            <div class="h-1 bg-cyan-500"></div>
+                            <div class="p-4">
+                                <div class="flex justify-between"><h4 class="text-sm font-medium text-gray-200">Healthcare AI</h4><span class="text-lg font-semibold text-cyan-500">73</span></div>
+                                <p class="text-xs text-gray-500 mt-1">AI in clinical decision support, diagnostics, and patient care</p>
+                                <div class="w-full bg-dark-700 rounded-full h-1 mt-3"><div class="h-1 rounded-full bg-cyan-500" style="width:23%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="gradient-line max-w-6xl mx-auto"></div>
+
+
+    <!-- =============================== -->
+    <!--          TECH STACK             -->
+    <!-- =============================== -->
+    <section id="tech" class="max-w-6xl mx-auto px-6 py-20">
+        <div class="text-center mb-14">
+            <h2 class="text-3xl font-bold">Built With</h2>
+            <p class="mt-3 text-gray-500 max-w-xl mx-auto">A modern, server-rendered stack. No JavaScript frameworks, no build steps, no bloat.</p>
+        </div>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-dark-900 border border-dark-700 rounded-lg p-5 text-center">
+                <div class="text-2xl mb-2">&#9889;</div>
+                <h4 class="text-sm font-semibold text-gray-200">FastAPI</h4>
+                <p class="text-xs text-gray-500 mt-1">Async Python web framework with Jinja2 server-side rendering</p>
+            </div>
+            <div class="bg-dark-900 border border-dark-700 rounded-lg p-5 text-center">
+                <div class="text-2xl mb-2">&#128640;</div>
+                <h4 class="text-sm font-semibold text-gray-200">HTMX</h4>
+                <p class="text-xs text-gray-500 mt-1">Dynamic interactions without JavaScript frameworks &mdash; hypermedia-driven</p>
+            </div>
+            <div class="bg-dark-900 border border-dark-700 rounded-lg p-5 text-center">
+                <div class="text-2xl mb-2">&#128024;</div>
+                <h4 class="text-sm font-semibold text-gray-200">PostgreSQL</h4>
+                <p class="text-xs text-gray-500 mt-1">Async psycopg3 with connection pooling and Alembic migrations</p>
+            </div>
+            <div class="bg-dark-900 border border-dark-700 rounded-lg p-5 text-center">
+                <div class="text-2xl mb-2">&#10024;</div>
+                <h4 class="text-sm font-semibold text-gray-200">LiteLLM + Pydantic</h4>
+                <p class="text-xs text-gray-500 mt-1">AI analysis with structured outputs and Pydantic v2 validation</p>
+            </div>
+        </div>
+
+        <div class="mt-8 bg-dark-900 border border-dark-700 rounded-lg p-6">
+            <h3 class="text-sm font-semibold text-gray-200 mb-4">Architecture at a Glance</h3>
+            <div class="grid grid-cols-3 gap-6 text-xs">
+                <div>
+                    <h4 class="text-gray-400 font-semibold uppercase tracking-wider mb-2">Data Sources</h4>
+                    <ul class="space-y-1.5 text-gray-500">
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>Congress.gov API</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-green-400"></span>LegiScan API</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>Executive Order feeds</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gray-400 font-semibold uppercase tracking-wider mb-2">AI Capabilities</h4>
+                    <ul class="space-y-1.5 text-gray-500">
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Deep legal analysis</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Auto-categorization</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>News discovery agent</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-accent"></span>Passage likelihood scoring</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gray-400 font-semibold uppercase tracking-wider mb-2">Frontend</h4>
+                    <ul class="space-y-1.5 text-gray-500">
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>Tailwind CSS (CDN)</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>HTMX v2 (no build step)</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>Material Icons</li>
+                        <li class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>Zero npm dependencies</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- =============================== -->
+    <!--            FOOTER               -->
+    <!-- =============================== -->
+    <footer class="border-t border-dark-700">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex items-center justify-between text-xs text-gray-600">
+            <span>Legisl<span class="text-red-500">8</span> &mdash; AI Legislation Tracker</span>
+            <span>Built with FastAPI, HTMX, and Tailwind CSS</span>
+        </div>
+    </footer>
+
+
+    <!-- Scroll fade-in observer -->
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+    </script>
+</body>
+</html>
